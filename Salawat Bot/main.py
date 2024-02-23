@@ -4,7 +4,7 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
 from datetime import datetime
-TOKEN = '6921240132:AAGlh9ssc8Uj36u28yLK1nf5uMqyIDNXgvg'
+TOKEN = 'your token'
 
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 dp = Dispatcher()
