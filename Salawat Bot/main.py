@@ -26,38 +26,27 @@ async def send_notification(text: str) -> None:
 async def salavat_sender():
     while True:
         if datetime.isoweekday(datetime.now()) == 5:
-            if datetime.now().strftime("%H:%M") == '7:30':
-                await send_notification(
-                    text='<strong>Аллахумма салли ‘аля Мухаммадин ва ‘аля али Мухаммад</strong>')
-                # с благовленной пятницей салават
-                await asyncio.sleep(60 * 55)
-            elif datetime.now().strftime("%H:%M") == '09:30':
+            if datetime.now().strftime("%H:%M") == '7:30': #10:30
                 await send_notification(
                     text='<strong>Аллахумма салли ‘аля Мухаммадин ва ‘аля али Мухаммад</strong>')
                 await asyncio.sleep(60 * 55)
-            elif datetime.now().strftime("%H:%M") == '11:30':
+            elif datetime.now().strftime("%H:%M") == '09:30': #12:30
                 await send_notification(
                     text='<strong>Аллахумма салли ‘аля Мухаммадин ва ‘аля али Мухаммад</strong>')
                 await asyncio.sleep(60 * 55)
-            elif datetime.now().strftime("%H:%M") == '13:30':
+            elif datetime.now().strftime("%H:%M") == '11:30': #14:30
                 await send_notification(
                     text='<strong>Аллахумма салли ‘аля Мухаммадин ва ‘аля али Мухаммад</strong>')
                 await asyncio.sleep(60 * 55)
-            elif datetime.now().strftime("%H:%M") == '15:30':
+            elif datetime.now().strftime("%H:%M") == '13:30': #16:30
                 await send_notification(
                     text='<strong>Аллахумма салли ‘аля Мухаммадин ва ‘аля али Мухаммад</strong>')
                 await asyncio.sleep(60 * 55)
-            elif datetime.now().strftime("%H:%M") == '17:30':
+            elif datetime.now().strftime("%H:%M") == '15:30': #18:30
                 await send_notification(
                     text='<strong>Аллахумма салли ‘аля Мухаммадин ва ‘аля али Мухаммад</strong>')
-                await asyncio.sleep(60 * 55)
-            elif datetime.now().strftime("%H:%M") == '19:30':
-                await send_notification(
-                    text='<strong>Аллахумма салли ‘аля Мухаммадин ва ‘аля али Мухаммад</strong>')
-                await asyncio.sleep(60 * 55 * 12)
+                await asyncio.sleep(60 * 55 * 9)
             await asyncio.sleep(15)
-
-# Добавить новую асинхронную функцию проверки пятницы
 
 
 async def main() -> None:
