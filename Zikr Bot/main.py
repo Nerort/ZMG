@@ -1,81 +1,75 @@
+import json
 import asyncio
-from data import TOKEN
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
-from datetime import datetime
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from datetime import datetime, time, timedelta
 
+# Uploading all data from JSON file
+with open('config.json', 'r', encoding='utf-8') as file:
+    data = json.load(file)
+    TOKEN = data['token']
+    CHANNEL_ID = data['channel_id']
+    GREETING = data['greeting']
+    MESSAGES = data['messages']
+    SALAWAT_TEXT = data['salawat_text']
+
+# Initializing the Bot
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 dp = Dispatcher()
 
 
+# Function for commands /help and /start
 @dp.message(Command('help', 'start'))
 async def command_start_handler(message: Message) -> None:
-    """
-    This handler answers on '/start' and '/help'
-    """
-    print('Chat info:', message.chat)
-    await message.answer(text=f'Привет, меня зовут "Зикр"!\nЯ был создан, чтобы напоминать о поминании Аллаха')
+    await message.answer(text=GREETING)
 
 
+# Function for sending messages to the channel
 async def send_notification(text: str) -> None:
-    await bot.send_message(text=text, chat_id='@delay_zikr')
+    await bot.send_message(text=text, chat_id=CHANNEL_ID)
 
 
-async def sender() -> None:
+# Schedule for posts in the main channel
+def schedule_messages(scheduler: AsyncIOScheduler) -> None:
+    for item in MESSAGES:
+        time_str = item['time']
+        message = item['message']
+        hour, minute = map(int, time_str.split(':'))
+        scheduler.add_job(
+            send_notification,
+            "cron",
+            hour=hour,
+            minute=minute,
+            args=[message]
+        )
+
+
+# Sending salawats on Friday
+async def salavat_sender():
+    salavat_times = [time(7, 30), time(9, 30), time(11, 30), time(13, 30), time(15, 30)]
     while True:
-        if datetime.now().strftime("%H:%M") == '07:10':
-            await send_notification(text='<strong>Ля Иляhа ИлляЛлаh Мухьаммадур РосулюЛлаh</strong>\nНет божества, достойного (поклонения) кроме Аллаха, Мухаммад — Посланник Аллаха')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '08:10':
-            await send_notification(text='<strong>Aллаху Акбар</strong>\nАллах велик')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '09:10':
-            await send_notification(text='<strong>Ля Хьавля Ва Ля Къуввата Илля БиЛляh</strong>\nНет силы и мощи кроме как у Аллаха')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '10:10':
-            await send_notification(text='<strong>СубхьанаЛлаh</strong>\nПречист Аллах')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '11:10':
-            await send_notification(text='<strong>АстагIфируЛлаhи Ва атубу илайхьи</strong>\nПрошу прощение у Аллаха и приношу свое покаяние и признаю, что Он мой Господь')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '12:10':
-            await send_notification(text='<strong>АльхьамдулиЛляh</strong>\nХвала Аллаху')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '13:10':
-            await send_notification(text='<strong>СубхьанаЛлаhи Ва Бихьамдиhи</strong>\nПречист Аллах, Велик Он, хвала Ему')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '14:10':
-            await send_notification(text='<strong>СубхьанаЛлаhиль IазIым</strong>\nCлава Аллаху Великому!')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '15:10':
-            await send_notification(text='<strong>Aллаху Акбар</strong>\nАллах велик')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '16:10':
-            await send_notification(text='<strong>СубхьанаЛлаh</strong>\nПречист Аллах')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '17:10':
-            await send_notification(text='<strong>АльхьамдулиЛляh</strong>\nХвала Аллаху')
-            await asyncio.sleep(60 * 55)
-        elif datetime.now().strftime("%H:%M") == '18:10':
-            await send_notification(text='<strong>АстагIфируЛлаh</strong>\nО Аллах! Прости меня')
-            await asyncio.sleep(60 * 55)
-        #     19:10 на наше время 22:10
-        elif datetime.now().strftime("%H:%M") == '19:10':
-            await send_notification(text='<strong>Ля иляhа илляЛлаhу вахьдаhу ля шарика ляhу, ляhуль мульку ва ляхьуль хьамду ва hува 1аля кулли шайин къодиир</strong>\nНет божества, кроме единого Аллаха, у Которого нет сотоварищей. Ему принадлежит власть и хвала. Он способен на всякую вещь')
-            await asyncio.sleep(60 * 55 * 12)
-        await asyncio.sleep(15)
+        now = datetime.now()
+        if now.weekday() == 4:  # now.weekday() == 4 means Friday
+            for salavat_time in salavat_times:
+                if salavat_time <= now.time() < (datetime.combine(now, salavat_time) + timedelta(minutes=1)).time():
+                    await send_notification(text=SALAWAT_TEXT)
+                    await asyncio.sleep(60)  # sleep for 1 minute to avoid duplicate messages
+
+        await asyncio.sleep(15)  # check every 15 seconds
 
 
-            
 async def main() -> None:
-    loop = asyncio.get_event_loop()
-    loop.create_task(sender())
+    scheduler = AsyncIOScheduler()
+    schedule_messages(scheduler)
+    scheduler.start()
+    asyncio.create_task(salavat_sender())
     await dp.start_polling(bot, skip_updates=True)
 
 
 if __name__ == "__main__":
-    print('Бот запустился')
+    print('Бот запущен')
     asyncio.run(main())
-    print('Бот выключен')
+    print('Бот отключен')
